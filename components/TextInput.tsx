@@ -1,10 +1,21 @@
-import React from 'react';
+import React, {useState} from 'react';
 
 import { View, TextInput as RNTextInput, TextInputProps as RNTextInputProps, Text, StyleSheet } from 'react-native';
 
 import { useController, useFormContext, ControllerProps, UseControllerProps } from 'react-hook-form';
 
 import Constants from 'expo-constants';
+import {
+    FormControlError,
+    FormControlErrorIcon,
+    FormControlErrorText, FormControlHelper, FormControlHelperText,
+    Input,
+    InputField, InputIcon, InputSlot,
+    VStack
+} from "@gluestack-ui/themed";
+import {AlertCircleIcon, EyeIcon, EyeOffIcon} from "lucide-react-native";
+
+
 
 interface TextInputProps extends RNTextInputProps, UseControllerProps {
     label: string
@@ -13,7 +24,16 @@ interface TextInputProps extends RNTextInputProps, UseControllerProps {
     setFormError: Function
 }
 
+
+
 const ControlledInput = (props: TextInputProps) => {
+
+    const [showPassword, setShowPassword] = useState(false);
+    const handleState = () => {
+        setShowPassword((showState) => {
+            return !showState;
+        });
+    };
 
     const formContext = useFormContext();
     const { formState } = formContext;
@@ -30,29 +50,62 @@ const ControlledInput = (props: TextInputProps) => {
 
     const hasError = Boolean(formState?.errors[name]);
 
-    return (
+    if (name === "password")
+    {
+        return (
 
-        <View>
-            {label && (<Text style={styles.label}>{label}</Text>)}
-            <View>
-                <RNTextInput
-                    autoCapitalize="none"
-                    textAlign="left"
-                    style={styles.input}
-                    onChangeText={field.onChange}
-                    onBlur={field.onBlur}
-                    value={field.value}
-                    {...inputProps}
-                />
+            <VStack>
+                <Text>{label && (<Text style={styles.label}>{label}</Text>)}</Text>
+                <Input>
+                    <InputField
+                        type={showPassword ? "text" : "password"}
+                        autoCapitalize="none"
+                        onChangeText={field.onChange}
+                        onBlur={field.onBlur}
+                        value={field.value}
+                        {...inputProps}
+                    />
+                    <InputSlot pr="$3" onPress={handleState}>
+                        {/* EyeIcon, EyeOffIcon are both imported from 'lucide-react-native' */}
+                        <InputIcon
+                            as={showPassword ? EyeIcon : EyeOffIcon}
+                            color="$darkBlue500"
+                        />
+                    </InputSlot>
+                </Input>
+                <FormControlHelper>
+                    <FormControlHelperText>
+                        {hasError && (<Text style={styles.error}>{formState.errors[name].message}</Text>)}
+                    </FormControlHelperText>
+                </FormControlHelper>
+            </VStack>
 
-                <View style={styles.errorContainer}>
-                    {hasError && (<Text style={styles.error}>{formState.errors[name].message}</Text>)}
-                </View>
+        );
+    }
+    else
+    {
+        return (
 
-            </View>
-        </View>
+            <VStack>
+                <Text>{label && (<Text style={styles.label}>{label}</Text>)}</Text>
+                <Input>
+                    <InputField
+                        autoCapitalize="none"
+                        onChangeText={field.onChange}
+                        onBlur={field.onBlur}
+                        value={field.value}
+                        {...inputProps}
+                    />
+                </Input>
+                <FormControlHelper>
+                    <FormControlHelperText>
+                        {hasError && (<Text style={styles.error}>{formState.errors[name].message}</Text>)}
+                    </FormControlHelperText>
+                </FormControlHelper>
+            </VStack>
 
-    );
+        );
+    }
 }
 
 export const TextInput = (props: TextInputProps) => {
