@@ -1,128 +1,103 @@
 import {
     Text,
-    Center,
-    Heading,
-    Divider,
     VStack,
-    Input,
-    InputField,
-    InputSlot,
-    InputIcon,
     FormControl,
-    FormControlErrorText,
-    Box,
-    FormControlLabel,
-    FormControlLabelText,
-    FormControlHelper,
-    FormControlHelperText, FormControlError, FormControlErrorIcon, ButtonText, Button, Icon, LinkText
+    ButtonText, Button, InputField, Input, InputSlot, InputIcon, LinkText
 } from "@gluestack-ui/themed";
-import {useMemo, useState} from "react";
-import {FormProvider, SubmitErrorHandler, SubmitHandler, useForm} from "react-hook-form";
-import {TextInput} from "@/components/TextInput";
-import {Link, router} from "expo-router";
+import {useState} from "react";
+import {Link, useRouter} from "expo-router";
 import * as SecureStore from 'expo-secure-store';
+import axios from "axios";
+import {Globals} from "@/app/common/globals";
+import {EyeIcon, EyeOffIcon} from "lucide-react-native";
+import axiosPrepared from "@/app/auth/interceptor";
 
 
-type FormValues = {
-    username: string;
-    password: string;
-};
+export default function login() {
 
-async function save(key: any, value: any) {
-    await SecureStore.setItemAsync(key, value);
-}
-async function getValueFor(key: any) {
-    let result = await SecureStore.getItemAsync(key);
-    if (result) {
-        return result;
-    } else {
-        alert('No values stored under that key.');
-    }
-}
-
-export default function Login() {
-    const [key, onChangeKey] = useState('');
-    const [value, onChangeValue] = useState('');
-    const {...methods} = useForm({mode: 'onChange'});
-
-    const onSubmit: SubmitHandler<FormValues> = (formDatas) => {
-        let test: any = null
-        console.log(formDatas)
-        const url = "https://messenger.dlfcaroline.online/api/login_check"
-        fetch(url, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-            method: "POST",
-            body: JSON.stringify({
-                "username": formDatas.username,
-                "password": formDatas.password,
-            })
+    const [showPassword, setShowPassword] = useState(false)
+    const handleState = () => {
+        setShowPassword((showState) => {
+            return !showState
         })
-            .then(response => response.json())
-            .then(data => save("token", data.token))
-            .catch(error => console.error(error))
-        console.log(getValueFor("token"))
-        router.replace('/tabs/(tabs)/private-conversations')
-    };
-
-    const [formError, setError] = useState<Boolean>(false)
-    const onError: SubmitErrorHandler<FormValues> = (errors, e) => {
-        return console.log({errors})
     }
 
+    const [username, setUsername] = useState("")
+    const [password, setPassword] = useState("")
+    const navigation = useRouter()
+
+    async function login() {
+        const user = {username, password}
+        await axios.post(Globals.baseUrl+'login_check', user)
+            .then((response)=>{
+                SecureStore.deleteItemAsync("token")
+                SecureStore.setItem("token", response.data.token)
+            })
+        await axiosPrepared.get(Globals.baseUrl+"profile/actual")
+            .then((response:any)=>{
+                Globals.actualUser ={
+                    id: response.data.id,
+                    username: response.data.username,
+                    public: response.data.public
+                }
+            })
+        navigation.replace('/tabs/(tabs)/private-conversations')
+    }
 
     return (
+        <FormControl
+            p="$4"
+            borderWidth="$1"
+            borderRadius="$lg"
+            borderColor="$borderLight300"
+            $dark-borderWidth="$1"
+            $dark-borderRadius="$lg"
+            $dark-borderColor="$borderDark800"
+        >
+            <VStack space="xl">
+                <VStack space="xs">
+                    <Text color="$text500" lineHeight="$xs">
+                        Email
+                    </Text>
+                    <Input>
+                        <InputField
+                            value={username}
+                            onChangeText={text => setUsername(text)}
+                            type="text" />
+                    </Input>
+                </VStack>
+                <VStack space="xs">
+                    <Text color="$text500" lineHeight="$xs">
+                        Password
+                    </Text>
+                    <Input>
+                        <InputField
+                            type={showPassword ? "text" : "password"}
+                            secureTextEntry={true}
+                            value={password}
+                            onChangeText={text => setPassword((text))}
+                        />
+                        <InputSlot pr="$3" onPress={handleState}>
+                            <InputIcon
+                                as={showPassword ? EyeIcon : EyeOffIcon}
+                                color="$darkBlue500"
+                            />
+                        </InputSlot>
+                    </Input>
+                </VStack>
+                <Button ml="auto" onPress={login}>
+                    <ButtonText>Log in</ButtonText>
+                </Button>
+            </VStack>
+            <VStack mt='$5'>
+                <Text>No account yet?</Text>
+                <Link href="/register">
+                    <LinkText>Register here</LinkText>
+                </Link>
+            </VStack>
+        </FormControl>
 
-<VStack p='$4' mt='$10'>
-            { formError ? <VStack><Text style={{color: 'red'}}>There was a problem with loading the form. Please try again later.</Text></VStack> :
-                <>
-                    <FormProvider {...methods}>
-                        <VStack space='xl'>
-                            {/*                            <Heading color='$text900' lineHeight='$md'>
-                                Register
-                            </Heading>*/}
-                            <FormControl isRequired={true}>
-                                <FormControlLabel>
-                                    <FormControlLabelText>Username</FormControlLabelText>
-                                </FormControlLabel>
-                                <TextInput
-                                    label=""
-                                    name="username"
-                                    rules={{ required: 'Username is required!' }}
-                                    setFormError={setError}
-                                />
-                            </FormControl>
-                            <Box>
-                                <FormControl
-                                    isRequired={true}
-                                >
-                                    <FormControlLabel>
-                                        <FormControlLabelText>Password</FormControlLabelText>
-                                    </FormControlLabel>
-                                    <TextInput
-                                        label=""
-                                        name="password"
-                                        rules={{required: "Password is required !"}}
-                                        setFormError = {setError}
-                                    />
-                                </FormControl>
-                            </Box>
-                            <VStack>
-                                <Button onPress={methods.handleSubmit(onSubmit)} size="lg" action="positive">
-                                    <ButtonText>Log In</ButtonText>
-                                </Button>
-                            </VStack>
-                        </VStack>
-                    </FormProvider>
-                    <VStack mt='$5'>
-                        <Text>No account yet?</Text>
-                        <Link href="/register">
-                            <LinkText>Register here</LinkText>
-                        </Link>
-                    </VStack>
-                </>
-            }
-        </VStack>
+
     );
 }
+

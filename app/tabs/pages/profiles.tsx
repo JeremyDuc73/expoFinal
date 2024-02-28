@@ -10,32 +10,28 @@ import {Globals} from "@/app/common/globals";
 import {useState} from "react";
 import {Profile} from "@/app/interfaces/Profile";
 import {FlatList, StyleSheet} from "react-native";
-import {PrivConv} from "@/app/interfaces/PrivConv";
 
 export default function PrivateConversations(){
-
     let token = SecureStore.getItem("token")
     const actualUser = Globals.actualUser
 
-    const [privateConvs, setPrivateConvs] = useState<PrivConv[]>([])
-    const getPrivateConversations = () => {
-        return axiosPrepared.get(Globals.baseUrl+"private/conversations/"+actualUser.id)
+    const [profiles, setProfiles] = useState<Profile[]>([])
+
+
+
+    const getProfilesFromAPI = () => {
+        return axiosPrepared.get(Globals.baseUrl+"profiles")
             .then((response) => {
-                setPrivateConvs(response.data)
+                setProfiles(response.data)
             })
     }
-
-
-    //
-    // FAIRE LES CONV PRIVEES
-    //
-
+    getProfilesFromAPI()
 
     return(
         <VStack>
             <FlatList
-                data={privateConvs}
-                renderItem={({item}:{item:PrivConv}) => <VStack><Text>{item.id}</Text></VStack>}
+                data={profiles}
+                renderItem={ ({item}:{item:Profile})=> <VStack><Text>{item.username}</Text><Divider my="$4"/></VStack> }
             />
         </VStack>
     )
@@ -43,4 +39,4 @@ export default function PrivateConversations(){
 
 const styles = StyleSheet.create({
 
-    })
+})

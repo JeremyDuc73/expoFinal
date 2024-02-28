@@ -4,6 +4,7 @@ import { Tabs } from "expo-router";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import {MessageCircleIcon} from "lucide-react-native";
 import {Icon} from "@gluestack-ui/themed";
+import {Globals} from "@/app/common/globals";
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
@@ -24,11 +25,20 @@ export default function TabLayout() {
       <Tabs.Screen
         name="private-conversations"
         options={{
-          title: "Private ",
-        tabBarIcon: ({ color }) => <FontAwesome size={25} name={'comments'} />,
-
+            title: `Private Conversations`,
+            tabBarIcon: ({ color }) => <FontAwesome size={25} name={'comments'} />,
+            tabBarShowLabel: false
         }}
       />
+
+    <Tabs.Screen
+        name="profile"
+        options={{
+            title: `Hello ${Globals.actualUser.username}`,
+            tabBarIcon: ({ color }) => <FontAwesome size={25} name={'comments'} />,
+            tabBarShowLabel: false
+        }}
+    />
 
 
 
