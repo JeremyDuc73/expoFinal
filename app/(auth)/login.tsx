@@ -30,8 +30,9 @@ export default function login() {
         const user = {username, password}
         await axios.post(Globals.baseUrl+'login_check', user)
             .then((response)=>{
-                SecureStore.deleteItemAsync("token")
-                SecureStore.setItem("token", response.data.token)
+                Globals.token = response.data.token
+                //SecureStore.deleteItemAsync("token")
+                //SecureStore.setItem("token", response.data.token)
             })
         await axiosPrepared.get(Globals.baseUrl+"profile/actual")
             .then((response:any)=>{

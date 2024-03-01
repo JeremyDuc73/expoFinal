@@ -12,7 +12,7 @@ import {Profile} from "@/app/interfaces/Profile";
 import {FlatList, StyleSheet} from "react-native";
 
 export default function PrivateConversations(){
-    let token = SecureStore.getItem("token")
+    let token = Globals.token
     const actualUser = Globals.actualUser
 
     const [profiles, setProfiles] = useState<Profile[]>([])

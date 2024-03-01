@@ -45,7 +45,7 @@ export default function Home() {
         >
           <HStack justifyContent="space-between" marginHorizontal="$10">
 
-            <Link href="/login">
+            <Link href="/(auth)/login">
               <Box
                 bg="#64748B33"
                 rounded="$full"

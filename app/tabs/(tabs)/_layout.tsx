@@ -1,6 +1,6 @@
 import React from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Tabs } from "expo-router";
+import {router, Tabs} from "expo-router";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import {MessageCircleIcon} from "lucide-react-native";
 import {Icon} from "@gluestack-ui/themed";
@@ -14,6 +14,7 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
+
   return (
     <Tabs
       screenOptions={{
