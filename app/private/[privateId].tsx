@@ -31,7 +31,7 @@ export default function PrivateId() {
     const getPrivateMessages =  async () => {
         return await axiosPrepared.get(Globals.baseUrl+"private/conversation/"+privateId)
             .then((response) => {
-                console.log('blabla')
+                console.log('messages fetched')
                 setPrivateMessages(response.data)
             })
     }
@@ -46,6 +46,14 @@ export default function PrivateId() {
             })
         setContent("")
         getPrivateMessages()
+    }
+
+    async function deleteMessage(messageId: number) {
+        console.log(messageId)
+        await axiosPrepared.delete(Globals.baseUrl+"private/conversation/"+privateId+"/delete/"+messageId)
+            .then((response) => {
+                console.log(response.data)
+            })
     }
 
     useEffect(() => {
@@ -77,15 +85,18 @@ export default function PrivateId() {
                                 );
                             }}
                         >
-                            <MenuItem key="Modify" textValue="Modify">
-                                <Button onPress={() => {console.log('coucou')}} style={styles.message}>
+                            <MenuItem key="Modify" textValue="Modify" p="$0" m="$0">
+                                <Button style={styles.message}>
                                     <FontAwesome size={15} name={'pencil'} style={styles.iconMenu}/>
                                     <ButtonText color="black" size="sm">Modify</ButtonText>
                                 </Button>
                             </MenuItem>
-                            <MenuItem key="Delete" textValue="Delete">
-                                <FontAwesome size={15} name={'trash'} style={styles.iconMenu}/>
-                                <MenuItemLabel size="sm">Delete</MenuItemLabel>
+
+                            <MenuItem key="Delete" textValue="Delete" p="$0" m="$0">
+                                <Button onPress={deleteMessage(item.id)} style={styles.message}>
+                                    <FontAwesome size={15} name={'trash'} style={styles.iconMenu}/>
+                                    <ButtonText color="black" size="sm">Delete</ButtonText>
+                                </Button>
                             </MenuItem>
                         </Menu>
                         <Divider my="$1"/>
