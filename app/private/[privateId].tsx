@@ -2,14 +2,14 @@ import {
     Box,
     Button,
     ButtonText,
-    Card, Divider,
+    Card, CloseIcon, Divider,
     Heading,
     HStack, Icon,
     Input,
     InputField,
     Menu,
     MenuItem,
-    MenuItemLabel,
+    MenuItemLabel, Modal, ModalBackdrop, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader,
     Text
 } from "@gluestack-ui/themed";
 import {Link, useLocalSearchParams} from "expo-router";
@@ -27,7 +27,14 @@ export default function PrivateId() {
     const actualUser = Globals.actualUser
 
     const [content, setContent] = useState("")
+    const [editContent, setEditContent] = useState("")
     const [privateMessages, setPrivateMessages] = useState<Message[]>([])
+
+    const [showModal, setShowModal] = useState(false)
+    const ref = React.useRef(null)
+
+
+
     const getPrivateMessages =  async () => {
         return await axiosPrepared.get(Globals.baseUrl+"private/conversation/"+privateId)
             .then((response) => {
@@ -49,12 +56,31 @@ export default function PrivateId() {
     }
 
     async function deleteMessage(messageId: number) {
-        console.log(messageId)
         await axiosPrepared.delete(Globals.baseUrl+"private/conversation/"+privateId+"/delete/"+messageId)
             .then((response) => {
                 console.log(response.data)
             })
+        getPrivateMessages()
     }
+
+    async function editMessage(messageId: number) {
+        await axiosPrepared.put(Globals.baseUrl+"private/conversation/"+privateId+"/edit/"+messageId, {
+            content: editContent
+        })
+            .then((response) => {
+                console.log(response.data)
+            })
+        setEditContent("")
+        setShowModal(false)
+        getPrivateMessages()
+    }
+
+    function showModalWithContent(messageContent: string) {
+        console.log(messageContent)
+        setShowModal(true)
+        setEditContent(messageContent)
+    }
+
 
     useEffect(() => {
         getPrivateMessages()
@@ -86,14 +112,47 @@ export default function PrivateId() {
                             }}
                         >
                             <MenuItem key="Modify" textValue="Modify" p="$0" m="$0">
-                                <Button style={styles.message}>
+                                <Button onPress={() => showModalWithContent(item.content)} style={styles.message}>
                                     <FontAwesome size={15} name={'pencil'} style={styles.iconMenu}/>
                                     <ButtonText color="black" size="sm">Modify</ButtonText>
                                 </Button>
+                                <Modal
+                                    isOpen={showModal}
+                                    onClose={() => {
+                                        setShowModal(false)
+                                    }}
+                                    finalFocusRef={ref}
+                                >
+                                    <ModalBackdrop />
+                                    <ModalContent>
+                                        <ModalHeader>
+                                            <Heading size="lg">Edit message</Heading>
+                                            <ModalCloseButton>
+                                                <Icon as={CloseIcon} />
+                                            </ModalCloseButton>
+                                        </ModalHeader>
+                                        <ModalBody>
+                                            <Input
+                                                variant="rounded"
+                                            >
+                                                <InputField
+                                                    placeholder="Enter Text here"
+                                                    value={editContent}
+                                                    onChangeText={text => setEditContent(text)}
+                                                    type="text"/>
+                                            </Input>
+                                        </ModalBody>
+                                        <ModalFooter>
+                                            <Button onPress={() => editMessage(item.id)} style={styles.buttonSend}>
+                                                <FontAwesome size={20} name={'paper-plane'} color="white"/>
+                                            </Button>
+                                        </ModalFooter>
+                                    </ModalContent>
+                                </Modal>
                             </MenuItem>
 
                             <MenuItem key="Delete" textValue="Delete" p="$0" m="$0">
-                                <Button onPress={deleteMessage(item.id)} style={styles.message}>
+                                <Button onPress={() => deleteMessage(item.id)} style={styles.message}>
                                     <FontAwesome size={15} name={'trash'} style={styles.iconMenu}/>
                                     <ButtonText color="black" size="sm">Delete</ButtonText>
                                 </Button>
@@ -101,7 +160,8 @@ export default function PrivateId() {
                         </Menu>
                         <Divider my="$1"/>
                     </>
-                )}/>
+                )}
+            />
             <HStack style={styles.test}>
                 <Input
                     variant="rounded"
